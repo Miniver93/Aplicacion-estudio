@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación para estudiar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" type="module"></script>
+</head>
+
+<body>
+    <main>
+        <section class="document-buttons">
+            <button id="load-button">Load</button>
+            <button id="save-button">Save</button>
+            <button id="reset-button">Reset</button>   
+        </section>
+        <section id="questions-and-answers">
+
+        </section>
+        <form id="questions-form">
+            <label for="question-label">Pregunta:</label>
+            <div style="position: relative; display: inline-block;">
+                <!-- Asigna un id único a cada span -->
+                <span id="question-width-helper" style="visibility: hidden; white-space: pre;"></span>
+                <input autocomplete="off" type="text" name="question" id="dynamic-question" oninput="syncInputWidth(this, 'question-width-helper')">
+            </div>
+            
+        </form>
+        
+        <form id="answers-form">
+            <label for="answer-label">Respuesta:</label>
+            <div style="position: relative; display: inline-block;">
+                <span id="answer-width-helper" style="visibility: hidden; white-space: pre;"></span>
+                <input autocomplete="off" type="text" name="answer" id="dynamic-answer" oninput="syncInputWidth(this, 'answer-width-helper')">
+            </div>
+            
+        </form>
+    </main>
+</body>
+
+</html>
