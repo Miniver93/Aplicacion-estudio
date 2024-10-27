@@ -25,22 +25,41 @@ window.onload = function () {
             $questionElement.classList.add("question");
             $questionElement.textContent = item.question;
             $questionsAndAnswers.appendChild($questionElement);
-    
+
             // Crear y añadir las respuestas con asteriscos
             (item.answers || []).forEach((answer) => {
                 const asterisks = "*".repeat(answer.length);
                 const $answerElement = document.createElement("h3");
                 $answerElement.classList.add("answer");
                 $answerElement.textContent = asterisks;
-    
-                // Muestra la respuesta en hover
+
+                // Mostrar la respuesta en hover, accediendo a localStorage directamente
                 $answerElement.addEventListener("mouseover", () => {
-                    $answerElement.textContent = answer; // Muestra la respuesta
+                    const updatedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+                    const questionIndex = Array.from($questionsAndAnswers.children)
+                        .filter(el => el.classList.contains("question"))
+                        .indexOf($questionElement);
+
+                    const answerIndex = (item.answers || []).indexOf(answer);
+
+                    if (updatedData[questionIndex] && updatedData[questionIndex].answers) {
+                        $answerElement.textContent = updatedData[questionIndex].answers[answerIndex];
+                    }
                 });
                 $answerElement.addEventListener("mouseout", () => {
-                    $answerElement.textContent = asterisks; // Vuelve a los asteriscos
+                    const updatedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+                    const questionIndex = Array.from($questionsAndAnswers.children)
+                        .filter(el => el.classList.contains("question"))
+                        .indexOf($questionElement);
+
+                    const answerIndex = (item.answers || []).indexOf(answer);
+
+                    if (updatedData[questionIndex] && updatedData[questionIndex].answers) {
+                        const asterisks = "*".repeat(updatedData[questionIndex].answers[answerIndex].length);
+                        $answerElement.textContent = asterisks;
+                    }
                 });
-    
+
                 $questionsAndAnswers.appendChild($answerElement);
             });
         });
@@ -71,41 +90,41 @@ $questionForm.addEventListener("submit", (e) => {
 $answerForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const answer = $answerForm.answer.value;
-    
+
 
     // Guardar la respuesta
     // Cambia la manera en que se almacenan las respuestas.
-if (answer) {
-    const storedData = JSON.parse(localStorage.getItem(storageKey)) || [];
-    const lastQuestionIndex = storedData.length - 1;
+    if (answer) {
+        const storedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+        const lastQuestionIndex = storedData.length - 1;
 
-    if (lastQuestionIndex >= 0) {
-        // Si ya hay respuestas, añade la nueva al array de respuestas
-        if (!storedData[lastQuestionIndex].answers) {
-            storedData[lastQuestionIndex].answers = []; // Inicializa el array si no existe
+        if (lastQuestionIndex >= 0) {
+            // Si ya hay respuestas, añade la nueva al array de respuestas
+            if (!storedData[lastQuestionIndex].answers) {
+                storedData[lastQuestionIndex].answers = []; // Inicializa el array si no existe
+            }
+            storedData[lastQuestionIndex].answers.push(answer); // Añade la nueva respuesta
+            localStorage.setItem(storageKey, JSON.stringify(storedData));
         }
-        storedData[lastQuestionIndex].answers.push(answer); // Añade la nueva respuesta
-        localStorage.setItem(storageKey, JSON.stringify(storedData));
+
+        // Crear un elemento para la respuesta con asteriscos
+        const asterisks = "*".repeat(answer.length);
+        const $answerElement = document.createElement("h3");
+        $answerElement.classList.add("answer");
+        $answerElement.textContent = asterisks;
+
+        // Mostrar la respuesta en hover
+        $answerElement.addEventListener("mouseover", () => {
+            $answerElement.textContent = answer; // Muestra la respuesta
+        });
+
+        $answerElement.addEventListener("mouseout", () => {
+            $answerElement.textContent = asterisks; // Vuelve a los asteriscos
+        });
+
+        $questionsAndAnswers.appendChild($answerElement);
+        $answerForm.reset();
     }
-    
-    // Crear un elemento para la respuesta con asteriscos
-    const asterisks = "*".repeat(answer.length);
-    const $answerElement = document.createElement("h3");
-    $answerElement.classList.add("answer");
-    $answerElement.textContent = asterisks;
-
-    // Mostrar la respuesta en hover
-    $answerElement.addEventListener("mouseover", () => {
-        $answerElement.textContent = answer; // Muestra la respuesta
-    });
-
-    $answerElement.addEventListener("mouseout", () => {
-        $answerElement.textContent = asterisks; // Vuelve a los asteriscos
-    });
-
-    $questionsAndAnswers.appendChild($answerElement);
-    $answerForm.reset();
-}
 });
 
 $resetButton.addEventListener("click", () => {
@@ -164,6 +183,98 @@ document.addEventListener("keypress", (e) => {
         }
     }
 });
+// Delegación de eventos en el contenedor principal
+// Delegación de eventos en el contenedor principal
+$questionsAndAnswers.addEventListener("click", (e) => {
+    // Verifica si el clic es en un elemento h3
+    if (e.target.tagName === "H3") {
+        const questionText = e.target.textContent;
+        const clickedPosition = e.offsetX;
+
+        // Crear el input para edición
+        const $input = document.createElement("input");
+        $input.type = "text";
+        $input.value = questionText;
+
+        // Ajusta el estilo del input para igualarlo al h3
+        $input.style.width = `${e.target.clientWidth}px`;
+        $input.style.height = `${e.target.clientHeight}px`;
+        $input.style.fontSize = getComputedStyle(e.target).fontSize;
+        $input.style.lineHeight = getComputedStyle(e.target).lineHeight;
+        $input.style.padding = getComputedStyle(e.target).padding;
+        $input.style.margin = getComputedStyle(e.target).margin;
+        $input.style.border = "none";
+        $input.style.borderBottom = "1px solid #333";
+        $input.style.outline = "none";
+        $input.style.backgroundColor = "transparent";
+        $input.style.color = "inherit";
+        $input.style.display = "inline-block";
+
+        if (e.target.classList.contains("answer")) {
+            $input.style.fontWeight = "lighter";
+        }
+
+        // Reemplaza el h3 con el input
+        e.target.replaceWith($input);
+        $input.focus();
+
+        // Calcular la posición del cursor
+        const charWidth = 8;  // Ancho promedio de cada carácter
+        const charIndex = Math.floor(clickedPosition / charWidth); // Índice aproximado del carácter clicado
+
+        // Posicionar el cursor en el índice calculado
+        setTimeout(() => {
+            $input.setSelectionRange(charIndex, charIndex);
+        }, 0);
+
+        // Guardar al perder el foco
+        // Guardar al perder el foco
+        // Guardar al perder el foco
+        $input.addEventListener("blur", () => {
+            const editedText = $input.value;
+            e.target.textContent = editedText; // Actualizar el h3 con el nuevo valor
+            $input.replaceWith(e.target); // Volver a mostrar el h3 inmediatamente
+
+            const storedData = JSON.parse(localStorage.getItem(storageKey)) || [];
+
+            if (e.target.classList.contains("question")) {
+                const questionIndex = Array.from($questionsAndAnswers.children)
+                    .filter(el => el.classList.contains("question"))
+                    .indexOf(e.target);
+
+                if (storedData[questionIndex]) {
+                    storedData[questionIndex].question = editedText;
+                }
+            } else if (e.target.classList.contains("answer")) {
+                const answersList = Array.from($questionsAndAnswers.children)
+                    .filter(el => el.classList.contains("answer"));
+
+                const answerIndex = answersList.indexOf(e.target);
+
+                let questionIndex = -1;
+                for (let i = answerIndex; i >= 0; i--) {
+                    if (answersList[i].previousElementSibling && answersList[i].previousElementSibling.classList.contains("question")) {
+                        questionIndex++;
+                    }
+                }
+
+                if (storedData[questionIndex] && storedData[questionIndex].answers) {
+                    storedData[questionIndex].answers[answerIndex - questionIndex] = editedText;
+                }
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(storedData));
+        });
+
+        // Guardar y salir con Enter
+        $input.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                $input.blur();  // Forzar el guardado y la salida del input
+            }
+        });
+    }
+});
+
 
 // Función para sincronizar el ancho del input con el contenido
 window.syncInputWidth = function (input, helperId) {
