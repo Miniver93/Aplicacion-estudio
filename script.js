@@ -183,7 +183,7 @@ document.addEventListener("keypress", (e) => {
         }
     }
 });
-// Delegación de eventos en el contenedor principal
+
 // Delegación de eventos en el contenedor principal
 $questionsAndAnswers.addEventListener("click", (e) => {
     // Verifica si el clic es en un elemento h3
@@ -227,8 +227,7 @@ $questionsAndAnswers.addEventListener("click", (e) => {
             $input.setSelectionRange(charIndex, charIndex);
         }, 0);
 
-        // Guardar al perder el foco
-        // Guardar al perder el foco
+
         // Guardar al perder el foco
         $input.addEventListener("blur", () => {
             const editedText = $input.value;
